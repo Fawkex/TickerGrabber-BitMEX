@@ -9,6 +9,7 @@ import time
 import ssl
 import sys
 import code
+import json
 from threading import Thread
 
 import apiconfig
@@ -27,10 +28,13 @@ except ImportError:
 
 SYMBOL = 'XBTUSD'
 
-if apiconfig.get_config['STORAGE_METHOD'] == 'redis':
+config = {}
+config = apiconfig.get_config()
+
+if config['STORAGE_METHOD'] == 'redis':
     import redis
-    r = redis.Redis(host=config['REDIS_HOST'],port=config['REDIS_PORT'],db=config['REDIS_DB'])
-elif apiconfig.get_config['STORAGE_METHOD'] == 'csv':
+    r = redis.Redis(host=apiconfig.config['REDIS_HOST'],port=config['REDIS_PORT'],db=config['REDIS_DB'])
+elif config['STORAGE_METHOD'] == 'csv':
     f = open(config['CSV_FILENAME'],"a")
 
 def subscribe(ws):
@@ -45,14 +49,11 @@ def subscribe(ws):
 def WriteREDIS(ws,message):
     p = r.pipeline()
     if 'table' in message:
-        data = message['data']
+        data = json.loads(message)['data']
         multi = 0
         for tickers in data:
-            if multi == 0:
-                date = tickers['timestamp'].replace('-','').replace('T','').replace(':','').replace(".",'').replace('Z','0000')
-                multi = 1
-            else:
-                date = date + 1
+            date = tickers['timestamp'].replace('-','').replace('T','').replace(':','').replace(".",'').replace('Z',"%04d" % multi)
+            multi = multi + 1
             if tickers['tickDirection'] == 'MinusTick':
                 side = 'SELL'
                 change = -1
@@ -78,18 +79,15 @@ def WriteREDIS(ws,message):
         p.execute()
             
     if 'pong' in message:
-        print(time.strftime('%Y-%m-%d',time.localtime(time.time())) + "To the moon.")
+        print(time.strftime('%Y-%m-%d',time.localtime(time.time())) + "  To the moon.")
 
 def WriteCSV(ws,message):
     if 'table' in message:
-        data = message['data']
+        data = json.loads(message)['data']
         multi = 0
         for tickers in data:
-            if multi == 0:
-                date = tickers['timestamp'].replace('-','').replace('T','').replace(':','').replace(".",'').replace('Z','0000')
-                multi = 1
-            else:
-                date = date + 1
+            date = tickers['timestamp'].replace('-','').replace('T','').replace(':','').replace(".",'').replace('Z',"%04d" % multi)
+            multi = multi + 1
             if tickers['tickDirection'] == 'MinusTick':
                 side = 'SELL'
                 change = -1
@@ -105,13 +103,13 @@ def WriteCSV(ws,message):
             price = tickers['price']
             size = tickers['homeNotional']
             value = tickers['foreignNotional']
-            f.write("{},{},{},{},{},{}".format(SYMBOL,side,price,size,value,change))
+            f.write("{},{},{},{},{},{},{}".format(date,SYMBOL,side,price,size,value,change))
             f.write("\n")
-        
+    
         f.flush()
 
     if 'pong' in message:
-        print(time.strftime('%Y-%m-%d',time.localtime(time.time())) + "To the moon.")
+        print(time.strftime('%Y-%m-%d',time.localtime(time.time())) + "  To the moon.")
 
 def on_error(ws,error):
     print(time.strftime('%Y-%m-%d',time.localtime(time.time())) + error)
@@ -123,8 +121,6 @@ def closing(ws):
     ws.close()
 
 def main():
-    config = {}
-    config = apiconfig.get_config()
     options = {}
 
     websocket.enableTrace(True)
