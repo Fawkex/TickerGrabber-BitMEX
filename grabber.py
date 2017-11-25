@@ -9,7 +9,6 @@ import time
 import ssl
 import sys
 import code
-import redis
 from threading import Thread
 
 import apiconfig
@@ -28,6 +27,12 @@ except ImportError:
 
 SYMBOL = 'XBTUSD'
 
+if apiconfig.get_config['STORAGE_METHOD'] == 'redis':
+    import redis
+    r = redis.Redis(host=config['REDIS_HOST'],port=config['REDIS_PORT'],db=config['REDIS_DB'])
+elif apiconfig.get_config['STORAGE_METHOD'] == 'csv':
+    f = open(config['CSV_FILENAME'],"a")
+
 def subscribe(ws):
     def run(*args):
         ws.send('{"op": "subscribe", "args": ["trade:XBTUSD"]}')
@@ -37,7 +42,7 @@ def subscribe(ws):
 
     Thread(target=run).start()
 
-def WriteREDIS(ws,message,r):
+def WriteREDIS(ws,message):
     p = r.pipeline()
     if 'table' in message:
         data = message['data']
@@ -75,7 +80,7 @@ def WriteREDIS(ws,message,r):
     if 'pong' in message:
         print(time.strftime('%Y-%m-%d',time.localtime(time.time())) + "To the moon.")
 
-def WriteCSV(ws,message,f):
+def WriteCSV(ws,message):
     if 'table' in message:
         data = message['data']
         multi = 0
@@ -132,13 +137,11 @@ def main():
     METHOD = apiconfig.get_config()['STORAGE_METHOD']
 
     if METHOD == 'redis':
-        r = redis.Redis(host=config['REDIS_HOST'],port=config['REDIS_PORT'],db=config['REDIS_DB'])
         ws = websocket.WebSocketApp(URL,
                                     on_message=WriteREDIS,
                                     on_error=on_error,
                                     on_close=closing)
     elif METHOD == 'csv':
-        f = open(config['CSV_FILENAME'],"a")
         ws = websocket.WebSocketApp(URL,
                                     on_message=WriteCSV,
                                     on_error=on_error,
