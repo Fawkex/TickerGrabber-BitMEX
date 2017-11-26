@@ -81,7 +81,7 @@ def WriteREDIS(ws,message):
         p.execute()
             
     if 'pong' in message:
-        print(time.strftime('%Y-%m-%d',time.localtime(time.time())) + "  To the moon.")
+        print(time.strftime('%Y-%m-%d %H:%M:%S',time.localtime(time.time())) + "  To the moon.")
 
 def WriteCSV(ws,message):
     if 'table' in message:
@@ -113,7 +113,7 @@ def WriteCSV(ws,message):
         f.flush()
 
     if 'pong' in message:
-        print(time.strftime('%Y-%m-%d',time.localtime(time.time())) + "  To the moon.")
+        print(time.strftime('%Y-%m-%d %H:%M:%S',time.localtime(time.time())) + "  To the moon.")
 
 def on_error(ws,error):
     print(str(time.strftime('%Y-%m-%d',time.localtime(time.time()))) + error)
