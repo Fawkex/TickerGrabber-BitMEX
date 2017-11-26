@@ -52,6 +52,8 @@ def WriteREDIS(ws,message):
         data = json.loads(message)['data']
         multi = 0
         for tickers in data:
+            if tickers['timestamp'] == '':
+                return
             date = tickers['timestamp'].replace('-','').replace('T','').replace(':','').replace(".",'').replace('Z',"%04d" % multi)
             multi = multi + 1
             if tickers['tickDirection'] == 'MinusTick':
@@ -86,6 +88,8 @@ def WriteCSV(ws,message):
         data = json.loads(message)['data']
         multi = 0
         for tickers in data:
+            if tickers['timestamp'] == '':
+                return
             date = tickers['timestamp'].replace('-','').replace('T','').replace(':','').replace(".",'').replace('Z',"%04d" % multi)
             multi = multi + 1
             if tickers['tickDirection'] == 'MinusTick':
@@ -112,9 +116,7 @@ def WriteCSV(ws,message):
         print(time.strftime('%Y-%m-%d',time.localtime(time.time())) + "  To the moon.")
 
 def on_error(ws,error):
-    print(time.strftime('%Y-%m-%d',time.localtime(time.time())) + error)
-
-    exit()
+    print(str(time.strftime('%Y-%m-%d',time.localtime(time.time()))) + error)
 
 def closing(ws):
     print("Shuting Down...")
