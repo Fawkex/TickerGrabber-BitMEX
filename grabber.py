@@ -116,7 +116,7 @@ def WriteCSV(ws,message):
         print(time.strftime('%Y-%m-%d %H:%M:%S',time.localtime(time.time())) + "  To the moon.")
 
 def on_error(ws,error):
-    print(str(time.strftime('%Y-%m-%d',time.localtime(time.time()))) + error)
+    print(error)
 
 def closing(ws):
     print("Shuting Down...")
