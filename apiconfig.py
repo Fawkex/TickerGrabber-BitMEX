@@ -16,11 +16,11 @@ HTTP_PROXY_HOST = '127.0.0.1'
 HTTP_PROXY_PORT = 8080
 
 #Storage
-STORAGE_METHOD = 'csv'              # redis or csv
+STORAGE_METHOD = 'redis'              # redis or csv
 
 REDIS_HOST = '127.0.0.1'
 REDIS_PORT = 6379
-REDIS_DB = 'bitmex'
+REDIS_DB = '0'
 
 CSV_FILENAME = 'BitMEX.csv'
 
