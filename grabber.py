@@ -33,7 +33,7 @@ config = apiconfig.get_config()
 
 if config['STORAGE_METHOD'] == 'redis':
     import redis
-    r = redis.Redis(host=apiconfig.config['REDIS_HOST'],port=config['REDIS_PORT'],db=config['REDIS_DB'])
+    r = redis.Redis(host=config['REDIS_HOST'],port=config['REDIS_PORT'],db=config['REDIS_DB'])
 elif config['STORAGE_METHOD'] == 'csv':
     f = open(config['CSV_FILENAME'],"a")
 
