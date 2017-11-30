@@ -27,7 +27,6 @@ except ImportError:
     pass
 
 SYMBOL = 'XBTUSD'
-vals = {}
 
 config = {}
 config = apiconfig.get_config()
@@ -72,14 +71,13 @@ def WriteREDIS(ws,message):
             price = tickers['price']
             size = tickers['homeNotional']
             value = tickers['foreignNotional']
-            vals['symbol'] = SYMBOL
-            vals['side'] = side
-            vals['price'] = price
-            vals['size'] = size
-            vals['value'] = value
-            vals['change'] = change
-            p.hmset("timestamp:"+date,vals)
-        
+            p.hset('timestamp:'+date,'symbol',SYMBOL)
+            p.hset('timestamp:'+date,'side',side)
+            p.hset('timestamp:'+date,'price',price)
+            p.hset('timestamp:'+date,'size',size)
+            p.hset('timestamp:'+date,'value',value)
+            p.hset('timestamp:'+date,'change',change)
+
         p.execute()
             
     if 'pong' in message:
