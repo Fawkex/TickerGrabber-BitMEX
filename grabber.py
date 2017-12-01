@@ -51,7 +51,7 @@ def subscribe(ws):
 
 def WriteREDIS(ws,message):
     p = r.pipeline()
-    if 'table' in message and 'trade' in message and markPrice != 111111:
+    if 'table' in message and 'trade' in message and fairPrice != 111111:
         data = json.loads(message)['data']
         multi = 0
         for tickers in data:
@@ -93,7 +93,7 @@ def WriteREDIS(ws,message):
         print(time.strftime('%Y-%m-%d %H:%M:%S',time.localtime(time.time())) + "  To the moon.")
 
 def WriteCSV(ws,message):
-    if 'table' in message and 'trade' in message and markPrice != 111111:
+    if 'table' in message and 'trade' in message and fairPrice != 111111:
         data = json.loads(message)['data']
         multi = 0
         for tickers in data:
