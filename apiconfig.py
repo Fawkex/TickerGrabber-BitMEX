@@ -19,11 +19,17 @@ HTTP_PROXY_HOST = '127.0.0.1'
 HTTP_PROXY_PORT = 8080
 
 #Storage
-STORAGE_METHOD = 'redis'              # redis or csv
+STORAGE_METHOD = 'redis'              # csv/mysql(recommanded)/redis
 
 REDIS_HOST = '127.0.0.1'
 REDIS_PORT = 6379
 REDIS_DB = '0'
+
+MYSQL_HOST = '127.0.0.1'
+MYSQL_PORT = 3306
+MYSQL_USER = 'bitmex'
+MYSQL_PASS = 'bitmex'
+MYSQL_DB = 'bitmex'
 
 CSV_FILENAME = 'BitMEX.csv'
 
@@ -43,6 +49,13 @@ def get_config():
     config['REDIS_HOST'] = REDIS_HOST
     config['REDIS_PORT'] = REDIS_PORT
     config['REDIS_DB'] = REDIS_DB
+
+    config['MYSQL_HOST'] = MYSQL_HOST
+    config['MYSQL_PORT'] = MYSQL_PORT
+    config['MYSQL_USER'] = MYSQL_USER
+    config['MYSQL_PASS'] = MYSQL_PASS
+    config['MYSQL_DB'] = MYSQL_DB
+
 
     config['CSV_FILENAME'] = CSV_FILENAME
 

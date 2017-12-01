@@ -38,6 +38,13 @@ if config['STORAGE_METHOD'] == 'redis':
     r = redis.Redis(host=config['REDIS_HOST'],port=config['REDIS_PORT'],db=config['REDIS_DB'])
 elif config['STORAGE_METHOD'] == 'csv':
     f = open(config['CSV_FILENAME'],"a")
+elif config['STORAGE_METHOD'] == 'mysql':
+    import MySQLdb
+    s = MySQLdb.connect(host=config['MYSQL_HOST'],
+                        port=config['MYSQL_PORT'],
+                        user=config['MYSQL_USER'],
+                        passwd=config['MYSQL_PASS'],
+                        db=config['MYSQL_DB'])
 
 def subscribe(ws):
     def run(*args):
@@ -60,31 +67,60 @@ def WriteREDIS(ws,message):
                 return
             date = tickers['timestamp'].replace('-','').replace('T','').replace(':','').replace(".",'').replace('Z',"%04d" % multi)
             multi = multi + 1
-            if tickers['tickDirection'] == 'MinusTick':
+            if 'Minus' in tickers['tickDirection']:
                 side = 'SELL'
                 change = -1
-            elif tickers['tickDirection'] == 'ZeroMinusTick':
-                side = 'SELL'
-                change = 0
-            elif tickers['tickDirection'] == 'PlusTick':
+            else:
                 side = 'BUY'
                 change = 1
-            elif tickers['tickDirection'] == 'ZeroPlusTick':
-                side = 'BUY'
+            if 'Zero' in tickers['tickDirection']:
                 change = 0
-            price = tickers['price']
-            size = tickers['homeNotional']
-            value = tickers['foreignNotional']
             vals['symbol'] = SYMBOL
             vals['side'] = side
-            vals['price'] = price
+            vals['price'] = tickers['price']
             vals['fairPrice'] = fairPrice
-            vals['size'] = size
-            vals['value'] = value
+            vals['size'] = tickers['homeNotional']
+            vals['value'] = tickers['foreignNotional']
             vals['change'] = change
             p.hmset("timestamp:"+date,vals)
+            p.execute()
         
-        p.execute()
+
+    if 'table' in message and 'fairPrice' in message:
+        fairPrice = json.loads(message)['data'][0]['fairPrice']
+        print(time.strftime('%Y-%m-%d %H:%M:%S',time.localtime(time.time())) + " Current " + SYMBOL + " fairPrice: " + str(fairPrice))
+            
+    if 'pong' in message:
+        print(time.strftime('%Y-%m-%d %H:%M:%S',time.localtime(time.time())) + " Pong.")
+
+def WriteMYSQL(ws,message):
+    global fairPrice
+    q = s.cursor()
+    if 'table' in message and 'trade' in message and fairPrice != 111111:
+        data = json.loads(message)['data']
+        multi = 0
+        tickers_ = ""
+        for tickers in data:
+            if tickers['timestamp'] == '':
+                return
+            date = tickers['timestamp'].replace('-','').replace('T','').replace(':','').replace(".",'').replace('Z',"%04d" % multi)
+            multi = multi + 1
+            if 'Minus' in tickers['tickDirection']:
+                side = 'SELL'
+                change = -1
+            else:
+                side = 'BUY'
+                change = 1
+            if 'Zero' in tickers['tickDirection']:
+                change = 0
+            if multi == 0:
+                tickers_ = "(%s,%s,%s,%s,%s,%s,%s,%s)" % (date,SYMBOL,side,tickers['price'],fairPrice,tickers['homeNotional'],tickers['foreignNotional'],change)
+            else:
+                tickers_ = tickers_ + ",(%s,%s,%s,%s,%s,%s,%s,%s)" % (date,SYMBOL,side,tickers['price'],fairPrice,tickers['homeNotional'],tickers['foreignNotional'],change)
+            
+        q.execute("INSERT IGNORE INTO bitmex (`Timestamp`,`Symbol`,`Side`,`Price`,`fairPrice`,`Size`,`Value`,`Change`) VALUES %s",tickers_)
+        
+        q.close()
 
     if 'table' in message and 'fairPrice' in message:
         fairPrice = json.loads(message)['data'][0]['fairPrice']
@@ -103,17 +139,13 @@ def WriteCSV(ws,message):
                 return
             date = tickers['timestamp'].replace('-','').replace('T','').replace(':','').replace(".",'').replace('Z',"%04d" % multi)
             multi = multi + 1
-            if tickers['tickDirection'] == 'MinusTick':
+            if 'Minus' in tickers['tickDirection']:
                 side = 'SELL'
                 change = -1
-            elif tickers['tickDirection'] == 'ZeroMinusTick':
-                side = 'SELL'
-                change = 0
-            elif tickers['tickDirection'] == 'PlusTick':
+            else:
                 side = 'BUY'
                 change = 1
-            elif tickers['tickDirection'] == 'ZeroPlusTick':
-                side = 'BUY'
+            if 'Zero' in tickers['tickDirection']:
                 change = 0
             price = tickers['price']
             size = tickers['homeNotional']
@@ -135,6 +167,8 @@ def on_error(ws,error):
 
 def closing(ws):
     print("Shuting Down...")
+    if config['STORAGE_METHOD'] == 'mysql':
+        s.close()
     ws.close()
 
 def main():
@@ -157,6 +191,11 @@ def main():
     elif METHOD == 'csv':
         ws = websocket.WebSocketApp(URL,
                                     on_message=WriteCSV,
+                                    on_error=on_error,
+                                    on_close=closing)
+    elif METHOD == 'mysql':
+        ws = websocket.WebSocketApp(URL,
+                                    on_message=WriteMYSQL,
                                     on_error=on_error,
                                     on_close=closing)
     else:
