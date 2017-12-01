@@ -50,6 +50,7 @@ def subscribe(ws):
     Thread(target=run).start()
 
 def WriteREDIS(ws,message):
+    global fairPrice
     p = r.pipeline()
     if 'table' in message and 'trade' in message and fairPrice != 111111:
         data = json.loads(message)['data']
@@ -85,14 +86,14 @@ def WriteREDIS(ws,message):
         
         p.execute()
 
-    if 'table' in message and 'instrument' in message:
-        global fairPrice
-        fairPrice = json.loads(message)['data']['fairPrice']
+    if 'table' in message and 'fairPrice' in message:
+        fairPrice = json.loads(message)['data'][0]['fairPrice']
             
     if 'pong' in message:
         print(time.strftime('%Y-%m-%d %H:%M:%S',time.localtime(time.time())) + "  To the moon.")
 
 def WriteCSV(ws,message):
+    global fairPrice
     if 'table' in message and 'trade' in message and fairPrice != 111111:
         data = json.loads(message)['data']
         multi = 0
@@ -121,9 +122,8 @@ def WriteCSV(ws,message):
     
         f.flush()
 
-    if 'table' in message and 'instrument' in message:
-        global fairPrice
-        fairPrice = json.loads(message)['data']['fairPrice']
+    if 'table' in message and 'fairPrice' in message:
+        fairPrice = json.loads(message)['data'][0]['fairPrice']
 
     if 'pong' in message:
         print(time.strftime('%Y-%m-%d %H:%M:%S',time.localtime(time.time())) + "  To the moon.")
