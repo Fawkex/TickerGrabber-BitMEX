@@ -88,7 +88,7 @@ def WriteREDIS(ws,message):
 
     if 'table' in message and 'fairPrice' in message:
         fairPrice = json.loads(message)['data'][0]['fairPrice']
-        print(time.strftime('%Y-%m-%d %H:%M:%S',time.localtime(time.time())) + " Current " + SYMBOL + " fairPrice: " + fairPrice)
+        print(time.strftime('%Y-%m-%d %H:%M:%S',time.localtime(time.time())) + " Current " + SYMBOL + " fairPrice: " + str(fairPrice))
             
     if 'pong' in message:
         print(time.strftime('%Y-%m-%d %H:%M:%S',time.localtime(time.time())) + "  To the moon.")
@@ -125,7 +125,7 @@ def WriteCSV(ws,message):
 
     if 'table' in message and 'fairPrice' in message:
         fairPrice = json.loads(message)['data'][0]['fairPrice']
-        print(time.strftime('%Y-%m-%d %H:%M:%S',time.localtime(time.time())) + " Current " + SYMBOL + " fairPrice: " + fairPrice)
+        print(time.strftime('%Y-%m-%d %H:%M:%S',time.localtime(time.time())) + " Current " + SYMBOL + " fairPrice: " + str(fairPrice))
 
     if 'pong' in message:
         print(time.strftime('%Y-%m-%d %H:%M:%S',time.localtime(time.time())) + "  To the moon.")
