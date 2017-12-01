@@ -27,6 +27,7 @@ except ImportError:
     pass
 
 SYMBOL = 'XBTUSD'
+fairPrice = 111111
 vals = {}
 
 config = {}
@@ -40,7 +41,8 @@ elif config['STORAGE_METHOD'] == 'csv':
 
 def subscribe(ws):
     def run(*args):
-        ws.send('{"op": "subscribe", "args": ["trade:XBTUSD"]}')
+        ws.send('{"op": "subscribe", "args": ["trade:%s"]}' % SYMBOL)
+        ws.send('{"op": "subscribe", "args": ["instrument:%s"]}' % SYMBOL)
         while True:
             ws.send('ping')
             time.sleep(5)
@@ -49,7 +51,7 @@ def subscribe(ws):
 
 def WriteREDIS(ws,message):
     p = r.pipeline()
-    if 'table' in message:
+    if 'table' in message and 'trade' in message and markPrice != 111111:
         data = json.loads(message)['data']
         multi = 0
         for tickers in data:
@@ -75,18 +77,23 @@ def WriteREDIS(ws,message):
             vals['symbol'] = SYMBOL
             vals['side'] = side
             vals['price'] = price
+            vals['fairPrice'] = fairPrice
             vals['size'] = size
             vals['value'] = value
             vals['change'] = change
             p.hmset("timestamp:"+date,vals)
         
         p.execute()
+
+    if 'table' in message and 'instrument' in message:
+        global fairPrice
+        fairPrice = json.loads(message)['data']['fairPrice']
             
     if 'pong' in message:
         print(time.strftime('%Y-%m-%d %H:%M:%S',time.localtime(time.time())) + "  To the moon.")
 
 def WriteCSV(ws,message):
-    if 'table' in message:
+    if 'table' in message and 'trade' in message and markPrice != 111111:
         data = json.loads(message)['data']
         multi = 0
         for tickers in data:
@@ -109,10 +116,14 @@ def WriteCSV(ws,message):
             price = tickers['price']
             size = tickers['homeNotional']
             value = tickers['foreignNotional']
-            f.write("{},{},{},{},{},{},{}".format(date,SYMBOL,side,price,size,value,change))
+            f.write("{},{},{},{},{},{},{},{}".format(date,SYMBOL,side,price,fairPrice,size,value,change))
             f.write("\n")
     
         f.flush()
+
+    if 'table' in message and 'instrument' in message:
+        global fairPrice
+        fairPrice = json.loads(message)['data']['fairPrice']
 
     if 'pong' in message:
         print(time.strftime('%Y-%m-%d %H:%M:%S',time.localtime(time.time())) + "  To the moon.")
