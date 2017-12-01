@@ -10,6 +10,9 @@
 #API Config
 BASE_URL = 'wss://www.bitmex.com/realtime/websocket'
 
+#Market
+SYMBOL = "XBTUSD"
+
 #HTTP Proxy
 HTTP_PROXY_ENABLE = 0
 HTTP_PROXY_HOST = '127.0.0.1'
@@ -28,6 +31,8 @@ def get_config():
     config = {}
 
     config['BASE_URL'] = BASE_URL
+
+    config['SYMBOL'] = SYMBOL
 
     config['HTTP_PROXY_ENABLE'] = HTTP_PROXY_ENABLE
     config['HTTP_PROXY_HOST'] = HTTP_PROXY_HOST

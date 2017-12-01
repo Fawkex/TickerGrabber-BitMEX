@@ -26,12 +26,12 @@ try:
 except ImportError:
     pass
 
-SYMBOL = 'XBTUSD'
-fairPrice = 111111
-vals = {}
-
 config = {}
 config = apiconfig.get_config()
+
+SYMBOL = config['SYMBOL']
+fairPrice = 111111
+vals = {}
 
 if config['STORAGE_METHOD'] == 'redis':
     import redis
@@ -88,6 +88,7 @@ def WriteREDIS(ws,message):
 
     if 'table' in message and 'fairPrice' in message:
         fairPrice = json.loads(message)['data'][0]['fairPrice']
+        print(time.strftime('%Y-%m-%d %H:%M:%S',time.localtime(time.time())) + " Current " + SYMBOL + " fairPrice: " + fairPrice)
             
     if 'pong' in message:
         print(time.strftime('%Y-%m-%d %H:%M:%S',time.localtime(time.time())) + "  To the moon.")
@@ -124,6 +125,7 @@ def WriteCSV(ws,message):
 
     if 'table' in message and 'fairPrice' in message:
         fairPrice = json.loads(message)['data'][0]['fairPrice']
+        print(time.strftime('%Y-%m-%d %H:%M:%S',time.localtime(time.time())) + " Current " + SYMBOL + " fairPrice: " + fairPrice)
 
     if 'pong' in message:
         print(time.strftime('%Y-%m-%d %H:%M:%S',time.localtime(time.time())) + "  To the moon.")
