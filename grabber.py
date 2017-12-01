@@ -119,9 +119,12 @@ def WriteMYSQL(ws,message):
                 tickers_ = "%s,(%s,\"%s\",\"%s\",%.2f,%.2f,%.8f,%d,%d)" % (tickers_,date,SYMBOL,side,tickers['price'],fairPrice,tickers['homeNotional'],tickers['foreignNotional'],change)
         
         cmds = "INSERT IGNORE INTO bitmex (`Timestamp`,`Symbol`,`Side`,`Price`,`fairPrice`,`Size`,`Value`,`Change`) VALUES %s;" % tickers_
-        q.execute(cmds)
-        
-        q.close()
+
+        try:
+            q.execute(cmds)
+            s.commit()
+        except:
+            s.rollback()
 
     if 'table' in message and 'fairPrice' in message:
         fairPrice = json.loads(message)['data'][0]['fairPrice']
