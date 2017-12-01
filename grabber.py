@@ -113,12 +113,13 @@ def WriteMYSQL(ws,message):
                 change = 1
             if 'Zero' in tickers['tickDirection']:
                 change = 0
-            if multi == 0:
-                tickers_ = "(%s,%s,%s,%s,%s,%s,%s,%s)" % (date,SYMBOL,side,tickers['price'],fairPrice,tickers['homeNotional'],tickers['foreignNotional'],change)
+            if multi == 1:
+                tickers_ = "(%s,\"%s\",\"%s\",%.2f,%.2f,%.8f,%d,%d)" % (date,SYMBOL,side,tickers['price'],fairPrice,tickers['homeNotional'],tickers['foreignNotional'],change)
             else:
-                tickers_ = tickers_ + ",(%s,%s,%s,%s,%s,%s,%s,%s)" % (date,SYMBOL,side,tickers['price'],fairPrice,tickers['homeNotional'],tickers['foreignNotional'],change)
-            
-        q.execute("INSERT IGNORE INTO bitmex (`Timestamp`,`Symbol`,`Side`,`Price`,`fairPrice`,`Size`,`Value`,`Change`) VALUES %s",tickers_)
+                tickers_ = "%s,(%s,\"%s\",\"%s\",%.2f,%.2f,%.8f,%d,%d)" % (tickers_,date,SYMBOL,side,tickers['price'],fairPrice,tickers['homeNotional'],tickers['foreignNotional'],change)
+        
+        cmds = "INSERT IGNORE INTO bitmex (`Timestamp`,`Symbol`,`Side`,`Price`,`fairPrice`,`Size`,`Value`,`Change`) VALUES %s;" % tickers_
+        q.execute(cmds)
         
         q.close()
 
