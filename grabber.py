@@ -91,7 +91,7 @@ def WriteREDIS(ws,message):
         print(time.strftime('%Y-%m-%d %H:%M:%S',time.localtime(time.time())) + " Current " + SYMBOL + " fairPrice: " + str(fairPrice))
             
     if 'pong' in message:
-        print(time.strftime('%Y-%m-%d %H:%M:%S',time.localtime(time.time())) + "  To the moon.")
+        print(time.strftime('%Y-%m-%d %H:%M:%S',time.localtime(time.time())) + " Pong.")
 
 def WriteCSV(ws,message):
     global fairPrice
@@ -128,7 +128,7 @@ def WriteCSV(ws,message):
         print(time.strftime('%Y-%m-%d %H:%M:%S',time.localtime(time.time())) + " Current " + SYMBOL + " fairPrice: " + str(fairPrice))
 
     if 'pong' in message:
-        print(time.strftime('%Y-%m-%d %H:%M:%S',time.localtime(time.time())) + "  To the moon.")
+        print(time.strftime('%Y-%m-%d %H:%M:%S',time.localtime(time.time())) + " Pong.")
 
 def on_error(ws,error):
     print(error)
