@@ -40,11 +40,15 @@ elif config['STORAGE_METHOD'] == 'csv':
     f = open(config['CSV_FILENAME'],"a")
 elif config['STORAGE_METHOD'] == 'mysql':
     import MySQLdb
+    if config['MYSQL_WARNINGS_SWITCH'] == 0:
+        from warnings import filterwarnings
+        filterwarnings('ignore', category = MySQLdb.Warning)
     s = MySQLdb.connect(host=config['MYSQL_HOST'],
                         port=config['MYSQL_PORT'],
                         user=config['MYSQL_USER'],
                         passwd=config['MYSQL_PASS'],
                         db=config['MYSQL_DB'])
+    s.ping(True)
 
 def subscribe(ws):
     def run(*args):
@@ -125,6 +129,8 @@ def WriteMYSQL(ws,message):
             s.commit()
         except:
             s.rollback()
+
+        q.close()
 
     if 'table' in message and 'fairPrice' in message:
         fairPrice = json.loads(message)['data'][0]['fairPrice']
