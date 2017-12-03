@@ -39,7 +39,10 @@ if config['STORAGE_METHOD'] == 'redis':
 elif config['STORAGE_METHOD'] == 'csv':
     f = open(config['CSV_FILENAME'],"a")
 elif config['STORAGE_METHOD'] == 'mysql':
-    import MySQLdb
+    try:
+        import MySQLdb
+    except:
+        import pymysql as MySQLdb
     if config['MYSQL_WARNINGS_SWITCH'] == 0:
         from warnings import filterwarnings
         filterwarnings('ignore', category = MySQLdb.Warning)
