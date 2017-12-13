@@ -1,6 +1,9 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 #
+# BitMEX Ticker Grabber
+#
+#
 # Copyright 2017 FawkesPan
 #
 #
@@ -12,7 +15,7 @@ import code
 import json
 from threading import Thread
 
-import apiconfig
+import ConfigParser
 
 import six
 from six.moves.urllib.parse import urlparse
@@ -26,31 +29,31 @@ try:
 except ImportError:
     pass
 
-config = {}
-config = apiconfig.get_config()
+config = ConfigParser.ConfigParser()
+config.read('apiconfig.py')
 
-SYMBOL = config['SYMBOL']
+SYMBOL = config.get('MARKET','SYMBOL')
 fairPrice = 111111
 vals = {}
 
-if config['STORAGE_METHOD'] == 'redis':
+if config.get('STORAGE','METHOD') == 'redis':
     import redis
-    r = redis.Redis(host=config['REDIS_HOST'],port=config['REDIS_PORT'],db=config['REDIS_DB'])
-elif config['STORAGE_METHOD'] == 'csv':
-    f = open(config['CSV_FILENAME'],"a")
-elif config['STORAGE_METHOD'] == 'mysql':
-    try:
+    r = redis.Redis(host=config.get('REDIS','HOST'),port=config.get('REDIS','PORT'),db=config.get('REDIS','DB'))
+elif config.get('STORAGE','METHOD') == 'csv':
+    f = open(config.get('CSV','FILENAME'),"a")
+elif config.get('STORAGE','METHOD') == 'mysql':
+	try:
         import MySQLdb
     except:
         import pymysql as MySQLdb
-    if config['MYSQL_WARNINGS_SWITCH'] == 0:
+    if config.get('MYSQL','WARNINGS_SWITCH') == 0:
         from warnings import filterwarnings
         filterwarnings('ignore', category = MySQLdb.Warning)
-    s = MySQLdb.connect(host=config['MYSQL_HOST'],
-                        port=config['MYSQL_PORT'],
-                        user=config['MYSQL_USER'],
-                        passwd=config['MYSQL_PASS'],
-                        db=config['MYSQL_DB'])
+    s = MySQLdb.connect(host=config.get('MYSQL','HOST'),
+                        port=config.get('MYSQL','PORT'),
+                        user=config.get('MYSQL','USER'),
+                        passwd=config.get('MYSQL','PASS'),
+                        db=config.get('MYSQL','DB'))
     s.ping(True)
 
 def subscribe(ws):
@@ -180,7 +183,7 @@ def on_error(ws,error):
 
 def closing(ws):
     print("Shuting Down...")
-    if config['STORAGE_METHOD'] == 'mysql':
+    if config.get('STORAGE','METHOD') == 'mysql':
         s.close()
     ws.close()
 
@@ -189,12 +192,12 @@ def main():
 
     websocket.enableTrace(True)
 
-    if config['HTTP_PROXY_ENABLE']:
-        options['http_proxy_host'] = config['HTTP_PROXY_HOST']
-        options['http_proxy_port'] = config['HTTP_PROXY_PORT']
+    if config.get('HTTP PROXY','ENABLE'):
+        options['http_proxy_host'] = config.get('HTTP PROXY','HOST')
+        options['http_proxy_port'] = config.get('HTTP PROXY','PORT')
 
-    URL = config['BASE_URL']
-    METHOD = apiconfig.get_config()['STORAGE_METHOD']
+    URL = config.get('API CONFIG','BASE_URL')
+    METHOD = config.get('STORAGE','METHOD')
 
     if METHOD == 'redis':
         ws = websocket.WebSocketApp(URL,
